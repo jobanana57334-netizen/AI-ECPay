@@ -1,0 +1,142 @@
+<div
+  id="app"
+  data-order-id="<%= orderId %>"
+  data-payment-result="<%= paymentResult %>"
+>
+  <h1
+    class="text-2xl font-bold text-text-primary mb-6"
+    style="font-family: &quot;Noto Serif TC&quot;, serif"
+  >
+    訂單詳情
+  </h1>
+
+  <div v-if="loading" class="flex justify-center py-12">
+    <div
+      class="w-8 h-8 border-4 border-rose-primary border-t-transparent rounded-full animate-spin"
+    ></div>
+  </div>
+
+  <template v-else-if="order">
+    <!-- Payment Result Alert -->
+    <div
+      v-if="paymentResult && paymentMessages[paymentResult]"
+      class="rounded-xl p-4 mb-6 text-sm"
+      :class="paymentMessages[paymentResult].cls"
+    >
+      {{ paymentMessages[paymentResult].text }}
+    </div>
+
+    <!-- Order Info -->
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+      <div
+        class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
+      >
+        <div>
+          <p class="text-sm text-text-secondary">
+            訂單編號：{{ order.order_no }}
+          </p>
+          <p class="text-xs text-text-muted mt-1">
+            建立日期：{{ new Date(order.created_at).toLocaleDateString('zh-TW') }}
+          </p>
+          <p v-if="order.status === 'paid'" class="text-sm text-sage mt-2">
+            付款時間：{{ order.paid_at ? new Date(order.paid_at).toLocaleString('zh-TW') : new Date(order.created_at).toLocaleString('zh-TW') }}
+          </p>
+        </div>
+        <span
+          class="text-xs px-3 py-1 rounded-full font-medium"
+          :class="statusMap[order.status]?.cls || 'bg-gray-100 text-gray-600'"
+        >
+          {{ statusMap[order.status]?.label || order.status }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Recipient Info -->
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+      <h2 class="font-medium text-text-primary mb-3">收件資訊</h2>
+      <div class="text-sm space-y-2 text-text-secondary">
+        <p>收件人：{{ order.recipient_name }}</p>
+        <p>Email：{{ order.recipient_email }}</p>
+        <p>地址：{{ order.recipient_address }}</p>
+      </div>
+    </div>
+
+    <!-- Order Items -->
+    <div class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+      <h2 class="font-medium text-text-primary mb-3">商品明細</h2>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-gray-100 text-text-muted">
+            <th class="text-left py-2 font-normal">商品名稱</th>
+            <th class="text-right py-2 font-normal">單價</th>
+            <th class="text-right py-2 font-normal">數量</th>
+            <th class="text-right py-2 font-normal">小計</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="item in order.items"
+            :key="item.id"
+            class="border-b border-gray-50"
+          >
+            <td class="py-3 text-text-primary">{{ item.product_name }}</td>
+            <td class="py-3 text-right text-text-secondary">
+              NT$ {{ item.product_price.toLocaleString() }}
+            </td>
+            <td class="py-3 text-right text-text-secondary">
+              {{ item.quantity }}
+            </td>
+            <td class="py-3 text-right text-text-primary font-medium">
+              NT$ {{ (item.product_price * item.quantity).toLocaleString() }}
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" class="pt-3 text-right font-bold text-text-primary">
+              總計
+            </td>
+            <td class="pt-3 text-right font-bold text-rose-primary text-lg">
+              NT$ {{ order.total_amount.toLocaleString() }}
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-end border-t pt-6">
+      <a
+        href="/orders"
+        class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition text-center"
+      >
+        返回訂單列表
+      </a>
+
+      <button
+        v-if="order.status === 'pending'"
+        @click="handleCancelOrder"
+        :disabled="cancelLoading || cancelSuccess"
+        class="px-6 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <span v-if="!cancelSuccess">取消訂單</span>
+        <span v-else>取消成功，稍後重新整理</span>
+      </button>
+
+      <button
+        v-else-if="order.status === 'paid'"
+        disabled
+        class="px-6 py-2 bg-gray-100 text-gray-400 cursor-not-allowed rounded-lg"
+      >
+        已付款 (無法直接取消)
+      </button>
+
+      <button
+        v-else-if="order.status === 'cancelled'"
+        disabled
+        class="px-6 py-2 bg-gray-100 text-gray-400 cursor-not-allowed rounded-lg"
+      >
+        已取消
+      </button>
+    </div>
+  </template>
+</div>
