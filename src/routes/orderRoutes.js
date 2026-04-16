@@ -41,10 +41,18 @@ const sanitize = (v, len = 200) =>
     .trim()
     .slice(0, len);
 
-const formatTW = (d) =>
-  new Date(d)
-    .toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false })
-    .replace(/\//g, "-");
+const formatTW = (d) => {
+  const date = new Date(d);
+  const yyyy = date.getFullYear();
+  const MM = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
+  const HH = String(date.getHours()).padStart(2, "0");
+  const mm = String(date.getMinutes()).padStart(2, "0");
+  const ss = String(date.getSeconds()).padStart(2, "0");
+
+  // 綠界嚴格要求格式：yyyy/MM/dd HH:mm:ss
+  return `${yyyy}/${MM}/${dd} ${HH}:${mm}:${ss}`;
+};
 
 // --- 路由區 ---
 
