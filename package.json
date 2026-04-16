@@ -9,7 +9,9 @@
     "css:build": "npx @tailwindcss/cli -i public/css/input.css -o public/css/output.css --minify",
     "openapi": "node generate-openapi.js",
     "simulate:ecpay-return": "node scripts/mock-ecpay-return.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:css": "tailwindcss -i ./public/css/input.css -o ./public/css/output.css --minify",
+    "build": "npm run build:css"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
